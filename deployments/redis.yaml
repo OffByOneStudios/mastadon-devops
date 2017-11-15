@@ -1,0 +1,44 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: pnw-social
+  labels:
+    app: redis
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        volumeMounts: # Simple Escape Hatch backup
+        - name: redis-data
+          mountPath: /data
+        - name: redis-backup
+          mountPath: /backup
+        ports:
+        - containerPort: 6379 # Redis`
+        env: []
+        # - name: POSTGRES_USER
+        #   value: postgres
+        # - name: POSTGRES_DB
+        #   value: postgres
+        # - name: PGDATA
+        #   value: /data/pgdata
+        # - name: POSTGRES_PASSWORD
+        #   value: password
+      volumes:
+        - name: redis-data
+          emptyDir: {}
+        - name: redis-backup # Backup Data
+          nfs:
+            server: moria
+            path: "/mnt/herald/bham-social/mastodon/redis"

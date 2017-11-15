@@ -1,0 +1,68 @@
+        env:
+          - name: REDIS_HOST
+            value: redis
+          - name: REDIS_PORT
+            value: 6379
+
+          - name: DB_HOST
+            value: postgres
+          - name: DB_NAME
+            value: postgres
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: username
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: password
+
+          - name: LOCAL_DOMAIN
+            value: www.pnw.social
+          - name: LOCAL_HTTPS
+            value: false
+
+          -name: PAPERCLIP_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: mastodon
+                key: paperclip_secret
+          -name: SECRET_KEY_BASE
+            valueFrom:
+              secretKeyRef:
+                name: mastodon
+                key: secret_key_base
+          -name: OTP_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: mastodon
+                key: otp_secret
+          -name: VAPID_PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: mastodon
+                key: vapid_private_key
+          -name: VAPID_PUBLIC_KEY
+            valueFrom:
+              secretKeyRef:
+                name: mastodon
+                key: vapid_public_key
+
+          - name: SMTP_SERVER
+            value: smtp.mailgun.org
+          - name: SMTP_PORT
+            value: 587
+          - name: SMTP_LOGIN
+            value: SMTP_Injection
+          - name: SMTP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: sparkpost
+                key: password
+          - name: SMTP_FROM_ADDRESS
+            value: notifications@www.pnw.social
+
+          - name: STREAMING_CLUSTER_NUM
+            value: 1

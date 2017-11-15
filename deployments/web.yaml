@@ -1,0 +1,309 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: web
+  namespace: pnw-social
+  labels:
+    app: web
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: mastodon
+        image: gargron/mastodon:v2.0.0
+        command: [bundle]
+        args: [exec , rails, s, "-p", "3000", "-b", '0.0.0.0']
+        env:
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_PORT
+          value: "6379"
+
+        - name: DB_HOST
+          value: postgres
+        - name: DB_NAME
+          value: postgres
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: password
+
+        - name: LOCAL_DOMAIN
+          value: www.pnw.social
+        - name: LOCAL_HTTPS
+          value: "false"
+
+        - name: PAPERCLIP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: paperclip_secret
+        - name: SECRET_KEY_BASE
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: secret_key_base
+        - name: OTP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: otp_secret
+        - name: VAPID_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: vapid_private_key
+        - name: VAPID_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: vapid_public_key
+
+        - name: SMTP_SERVER
+          value: smtp.mailgun.org
+        - name: SMTP_PORT
+          value: "587"
+        - name: SMTP_LOGIN
+          value: SMTP_Injection
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sparkpost
+              key: password
+        - name: SMTP_FROM_ADDRESS
+          value: notifications@www.pnw.social
+
+        - name: STREAMING_CLUSTER_NUM
+          value: "1"
+
+
+        volumeMounts: # Simple Escape Hatch backup
+        - name: mastodon-assets
+          mountPath: /mastodon/public/assets
+        - name: mastodon-system
+          mountPath: /mastodon/public/system
+        - name: mastodon-packs
+          mountPath: /mastodon/public/packs
+        - name: backup-assets
+          mountPath: /backup/assets
+        - name: backup-system
+          mountPath: /backup/system
+        - name: backup-packs
+          mountPath: /backup/packs
+        ports:
+        - containerPort: 3000 # rails`
+
+      - name: streaming
+        image: gargron/mastodon:v2.0.0
+        command: [npm]
+        args: [run, start]
+        env:
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_PORT
+          value: "6379"
+
+        - name: DB_HOST
+          value: postgres
+        - name: DB_NAME
+          value: postgres
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: password
+
+        - name: LOCAL_DOMAIN
+          value: www.pnw.social
+        - name: LOCAL_HTTPS
+          value: "false"
+
+        - name: PAPERCLIP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: paperclip_secret
+        - name: SECRET_KEY_BASE
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: secret_key_base
+        - name: OTP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: otp_secret
+        - name: VAPID_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: vapid_private_key
+        - name: VAPID_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: vapid_public_key
+
+        - name: SMTP_SERVER
+          value: smtp.mailgun.org
+        - name: SMTP_PORT
+          value: "587"
+        - name: SMTP_LOGIN
+          value: SMTP_Injection
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sparkpost
+              key: password
+        - name: SMTP_FROM_ADDRESS
+          value: notifications@www.pnw.social
+
+        - name: STREAMING_CLUSTER_NUM
+          value: "1"
+
+
+        volumeMounts: # Simple Escape Hatch backup
+        - name: mastodon-assets
+          mountPath: /mastodon/public/assets
+        - name: mastodon-system
+          mountPath: /mastodon/public/system
+        - name: mastodon-packs
+          mountPath: /mastodon/public/packs
+        - name: backup-assets
+          mountPath: /backup/assets
+        - name: backup-system
+          mountPath: /backup/system
+        - name: backup-packs
+          mountPath: /backup/packs
+        ports:
+        - containerPort: 4000 # stream`
+
+
+      - name: sidekiq
+        image: gargron/mastodon:v2.0.0
+        command: [bundle]
+        args: [exec, sidekiq, "-q", "default", "-q", "mailers", "-q", "pull", "-q", "push"]
+        env:
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_PORT
+          value: "6379"
+
+        - name: DB_HOST
+          value: postgres
+        - name: DB_NAME
+          value: postgres
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: password
+
+        - name: LOCAL_DOMAIN
+          value: www.pnw.social
+        - name: LOCAL_HTTPS
+          value: "false"
+
+        - name: PAPERCLIP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: paperclip_secret
+        - name: SECRET_KEY_BASE
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: secret_key_base
+        - name: OTP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: otp_secret
+        - name: VAPID_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: vapid_private_key
+        - name: VAPID_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mastodon
+              key: vapid_public_key
+
+        - name: SMTP_SERVER
+          value: smtp.mailgun.org
+        - name: SMTP_PORT
+          value: "587"
+        - name: SMTP_LOGIN
+          value: SMTP_Injection
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sparkpost
+              key: password
+        - name: SMTP_FROM_ADDRESS
+          value: notifications@www.pnw.social
+
+        - name: STREAMING_CLUSTER_NUM
+          value: "1"
+
+
+        volumeMounts: # Simple Escape Hatch backup
+        - name: mastodon-assets
+          mountPath: /mastodon/public/assets
+        - name: mastodon-system
+          mountPath: /mastodon/public/system
+        - name: mastodon-packs
+          mountPath: /mastodon/public/packs
+        - name: backup-assets
+          mountPath: /backup/assets
+        - name: backup-system
+          mountPath: /backup/system
+        - name: backup-packs
+          mountPath: /backup/packs
+
+      # Volumes
+      volumes:
+        - name: mastodon-assets
+          emptyDir: {}
+        - name: mastodon-system
+          emptyDir: {}
+        - name: mastodon-packs
+          emptyDir: {}
+        - name: backup-assets # Backup Data
+          nfs:
+            server: moria
+            path: "/mnt/herald/bham-social/mastodon/assets"
+        - name: backup-system # Backup Data
+          nfs:
+            server: moria
+            path: "/mnt/herald/bham-social/mastodon/system"
+        - name: backup-packs # Backup Data
+          nfs:
+            server: moria
+            path: "/mnt/herald/bham-social/mastodon/packs"
+

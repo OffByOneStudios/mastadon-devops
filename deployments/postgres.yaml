@@ -1,0 +1,49 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: pnw-social
+  labels:
+    app: postgres
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:alpine
+        volumeMounts: # Simple Escape Hatch backup
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-backup
+          mountPath: /backup
+        ports:
+        - containerPort: 5432 # Postgres`
+        env: 
+        - name: POSTGRES_DB
+          value: postgres
+
+        - name: POSTGRES_USER
+          valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: password
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+        - name: postgres-backup # Backup Data
+          nfs:
+            server: moria
+            path: "/mnt/herald/bham-social/mastodon/postgres"

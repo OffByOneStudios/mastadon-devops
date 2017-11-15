@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bastion
+  namespace: pnw-social
+  labels:
+    app: bastion
+spec:
+  containers:
+  - name: debian
+    image: alpine:latest
+    command:
+      - sleep
+      - "3600"
