@@ -1,0 +1,4 @@
+#!/bin/bash
+ts=$(date +%d-%m-%Y"_"%H_%M_%S)
+pg_dumpall -c -U postgres | gzip > /tmp/$ts.zip
+cp /tmp/$ts.zip /backup/

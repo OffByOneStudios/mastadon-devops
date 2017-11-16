@@ -1,0 +1,2 @@
+rsync -avz /mastodon/public/assets /backup/assets/
+rsync -avz /mastodon/public/system /backup/system/
