@@ -17,6 +17,11 @@ spec:
         app: web
     spec:
       containers:
+      - name: nginx
+        image: pnwsocial/nginx:1.1
+        ports:
+          - containerPort: 80 # nginx
+
       - name: mastodon
         image: gargron/mastodon:v2.0.0
         command: [bundle]
@@ -43,9 +48,9 @@ spec:
               key: password
 
         - name: LOCAL_DOMAIN
-          value: www.pnw.social
+          value: pnw.social
         - name: LOCAL_HTTPS
-          value: "false"
+          value: "true"
 
         - name: PAPERCLIP_SECRET
           valueFrom:
@@ -74,7 +79,7 @@ spec:
               key: vapid_public_key
 
         - name: SMTP_SERVER
-          value: smtp.mailgun.org
+          value: smtp.sparkpostmail.com
         - name: SMTP_PORT
           value: "587"
         - name: SMTP_LOGIN
@@ -85,7 +90,9 @@ spec:
               name: sparkpost
               key: password
         - name: SMTP_FROM_ADDRESS
-          value: notifications@www.pnw.social
+          value: notifications@mail.pnw.social
+        - name: SMTP_DOMAIN
+          value: mail.pnw.social
 
         - name: STREAMING_CLUSTER_NUM
           value: "1"
@@ -133,9 +140,9 @@ spec:
               key: password
 
         - name: LOCAL_DOMAIN
-          value: www.pnw.social
+          value: pnw.social
         - name: LOCAL_HTTPS
-          value: "false"
+          value: "true"
 
         - name: PAPERCLIP_SECRET
           valueFrom:
@@ -164,7 +171,7 @@ spec:
               key: vapid_public_key
 
         - name: SMTP_SERVER
-          value: smtp.mailgun.org
+          value: smtp.sparkpostmail.com
         - name: SMTP_PORT
           value: "587"
         - name: SMTP_LOGIN
@@ -175,7 +182,9 @@ spec:
               name: sparkpost
               key: password
         - name: SMTP_FROM_ADDRESS
-          value: notifications@www.pnw.social
+          value: notifications@mail.pnw.social
+        - name: SMTP_DOMAIN
+          value: mail.pnw.social
 
         - name: STREAMING_CLUSTER_NUM
           value: "1"
@@ -196,7 +205,6 @@ spec:
           mountPath: /backup/packs
         ports:
         - containerPort: 4000 # stream`
-
 
       - name: sidekiq
         image: gargron/mastodon:v2.0.0
@@ -224,9 +232,9 @@ spec:
               key: password
 
         - name: LOCAL_DOMAIN
-          value: www.pnw.social
+          value: pnw.social
         - name: LOCAL_HTTPS
-          value: "false"
+          value: "true"
 
         - name: PAPERCLIP_SECRET
           valueFrom:
@@ -255,7 +263,7 @@ spec:
               key: vapid_public_key
 
         - name: SMTP_SERVER
-          value: smtp.mailgun.org
+          value: smtp.sparkpostmail.com
         - name: SMTP_PORT
           value: "587"
         - name: SMTP_LOGIN
@@ -266,7 +274,9 @@ spec:
               name: sparkpost
               key: password
         - name: SMTP_FROM_ADDRESS
-          value: notifications@www.pnw.social
+          value: notifications@mail.pnw.social
+        - name: SMTP_DOMAIN
+          value: mail.pnw.social
 
         - name: STREAMING_CLUSTER_NUM
           value: "1"
